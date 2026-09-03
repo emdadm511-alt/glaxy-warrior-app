@@ -27,9 +27,10 @@ jobs:
 
       - name: Build Android Scaffolding & AdMob Setup
         run: |
-          flutter create . --platforms=android --org com.galaxy.warrior
+          # প্রজেক্ট নেম স্পষ্টভাবে উল্লেখ করে অ্যান্ড্রয়েড ফাইল তৈরি করা
+          flutter create --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
           
-          # AdMob App ID নিরাপদভাবে যুক্ত করা
+          # AdMob টেস্ট App ID যুক্ত করা
           sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>\n    </application>|g' android/app/src/main/AndroidManifest.xml
 
       - name: Install dependencies
