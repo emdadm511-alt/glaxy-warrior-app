@@ -22,13 +22,16 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Build Android Scaffolding & AdMob Setup
+      - name: Configure Android Project, Kotlin & AdMob
         run: |
-          # প্রজেক্ট নেম স্পষ্টভাবে উল্লেখ করে অ্যান্ড্রয়েড ফাইল তৈরি করা
           flutter create --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
+          
+          # Kotlin ভার্সন ফিক্স করা
+          sed -i 's/org.jetbrains.kotlin.android" version "[^"]*"/org.jetbrains.kotlin.android" version "1.9.24"/g' android/settings.gradle || true
+          sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.24'/g" android/build.gradle || true
           
           # AdMob টেস্ট App ID যুক্ত করা
           sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>\n    </application>|g' android/app/src/main/AndroidManifest.xml
