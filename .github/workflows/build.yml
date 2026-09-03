@@ -19,19 +19,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter (Latest Stable)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Configure Android Project, Kotlin & AdMob
+      - name: Configure Android, Kotlin & AdMob
         run: |
           flutter create --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
           
-          # Kotlin ভার্সন ফিক্স করা
-          sed -i 's/org.jetbrains.kotlin.android" version "[^"]*"/org.jetbrains.kotlin.android" version "1.9.24"/g' android/settings.gradle || true
-          sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.24'/g" android/build.gradle || true
+          # Kotlin 1.9.24 বিল্ডস্ক্রিপ্ট ফিক্স
+          sed -i '1s|^|buildscript { ext.kotlin_version = "1.9.24"; repositories { google(); mavenCentral() } }\n|' android/build.gradle || true
           
           # AdMob টেস্ট App ID যুক্ত করা
           sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>\n    </application>|g' android/app/src/main/AndroidManifest.xml
