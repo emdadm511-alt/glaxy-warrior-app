@@ -1,47 +1,27 @@
-name: Build Game APK
+name: galaxy_warrior
+description: "Galaxy Warrior Game with AdMob"
+publish_to: 'none'
+version: 1.0.0+1
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+environment:
+  sdk: '>=3.0.0 <4.0.0'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mobile_ads: ^5.1.0
+  webview_flutter: ^4.10.0
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Set up Flutter (Latest Stable)
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-
-      - name: Configure Android, Kotlin & AdMob
-        run: |
-          flutter create --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
-          
-          # Kotlin 1.9.24 বিল্ডস্ক্রিপ্ট ফিক্স
-          sed -i '1s|^|buildscript { ext.kotlin_version = "1.9.24"; repositories { google(); mavenCentral() } }\n|' android/build.gradle || true
-          
-          # AdMob টেস্ট App ID যুক্ত করা
-          sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>\n    </application>|g' android/app/src/main/AndroidManifest.xml
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release --no-tree-shake-icons
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Galaxy-Warrior-AdMob-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+flutter:
+  uses-material-design: true
+  assets:
+    - index.html
+    - plane1.png
+    - plane2.png
+    - plane3.png
+    - obscle.png
+    - boss.png
+    - bullet.png
+    - bg.png
+    - bullet.wav
+    - bgm.wav
