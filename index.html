@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Galaxy Warrior Pro - Ultra Edition</title>
+    <!-- Google Mobile Ads (H5 Ads SDK) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3940256099942544" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --blue: #00d4ff;
+            --gold: #ffd700;
+            --red: #ff3344;
+            --green: #2ecc71;
+            --purple: #a855f7;
+            --dark: #040914;
+        }
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
+        body, html { overflow: hidden; background: #000; font-family: 'Segoe UI', Roboto, sans-serif; color: white; touch-action: none; width: 100%; height: 100%; }
+        canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
+        
+        .screen {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at center, rgba(10, 20, 45, 0.96), rgba(2, 5, 12, 0.98));
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100; text-align: center; padding: 20px;
+            backdrop-filter: blur(8px);
+        }
+        .hidden { display: none !important; }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--blue), #0066cc);
+            border: none; padding: 12px 28px;
+            color: #fff; font-weight: 800; border-radius: 8px;
+            cursor: pointer; margin: 5px; font-size: 0.95rem;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-green { background: linear-gradient(135deg, var(--green), #219653); box-shadow: 0 4px 15px rgba(46,204,113,0.4); }
+        .btn-gold { background: linear-gradient(135deg, var(--gold), #d4ac0d); color: #000; box-shadow: 0 4px 15px rgba(255,215,0,0.4); }
+        .btn-purple { background: linear-gradient(135deg, var(--purple), #7e22ce); box-shadow: 0 4px 15px rgba(168,85,247,0.4); }
+
+        .logo-text {
+            font-size: 2.8rem; font-weight: 900;
+            color: var(--blue);
+            text-shadow: 0 0 25px var(--blue), 0 0 50px rgba(0,212,255,0.5);
+            margin-bottom: 15px; line-height: 1.1; letter-spacing: 2px;
+        }
+
+        /* Top HUD */
+        #hud {
+            position: fixed; top: 8px; left: 12px; right: 12px;
+            z-index: 50; display: flex; justify-content: space-between; align-items: center;
+            font-weight: 800; font-size: 0.95rem; color: var(--blue);
+            pointer-events: none; text-shadow: 0 0 10px rgba(0,212,255,0.6);
+        }
+        #hud .hud-left, #hud .hud-right { display: flex; gap: 10px; align-items: center; }
+        .icon-btn {
+            pointer-events: auto; background: rgba(255,255,255,0.15);
+            border: 1px solid var(--blue); color: #fff; width: 34px; height: 34px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1rem;
+        }
+
+        /* Mega Bomb Button */
+        #bomb-btn {
+            position: fixed; bottom: 65px; right: 20px; z-index: 60;
+            width: 58px; height: 58px; border-radius: 50%;
+            background: radial-gradient(circle, #ff3344, #990011);
+            border: 2px solid #fff; box-shadow: 0 0 20px rgba(255,51,68,0.8);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.3rem; cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #bomb-btn:active { transform: scale(0.9); }
+        #bomb-cooldown {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: rgba(0,0,0,0.7); display: none;
+            align-items: center; justify-content: center; font-size: 0.9rem; color: #fff;
+        }
+
+        /* Shop Tabs & Upgrades */
+        .shop-tabs { display: flex; gap: 10px; margin-bottom: 12px; }
+        .shop-tab { padding: 6px 16px; border-radius: 20px; background: #112233; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+        .shop-tab.active { background: var(--blue); color: #000; }
+        .upgrade-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 8px;
+            margin: 6px 0; width: 290px;
+        }
+
+        /* Shop Grid */
+        .plane-grid { display: flex; gap: 10px; margin: 10px 0; max-width: 340px; flex-wrap: wrap; justify-content: center; }
+        .plane-card {
+            border: 2px solid #333; padding: 8px; border-radius: 12px;
+            background: rgba(10, 20, 35, 0.7); cursor: pointer; width: 95px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .plane-card.selected { border-color: var(--blue); box-shadow: 0 0 15px var(--blue); background: rgba(0,212,255,0.15); }
+        .plane-card.locked { opacity: 0.6; }
+        .plane-card img { width: 42px; height: 42px; object-fit: contain; }
+
+        /* Level Grid */
+        .level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+        .lvl-btn {
+            width: 54px; height: 54px; background: #111e33;
+            border: 1px solid #223a5e; color: #557; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; font-size: 1rem;
+        }
+        .lvl-btn.unlocked { color: #fff; border-color: var(--gold); background: #1c3358; cursor: pointer; }
+        .lvl-stars { font-size: 0.65rem; color: var(--gold); }
+
+        #boss-ui {
+            position: fixed; top: 48px; left: 50%; transform: translateX(-50%);
+            width: 240px; display: none; z-index: 50; text-align: center;
+        }
+        .hp-bg { width: 100%; height: 10px; background: #222; border-radius: 5px; overflow: hidden; border: 1px solid #fff; margin-top: 3px; }
+        #hp-fill { height: 100%; background: var(--red); width: 100%; transition: width 0.1s linear; }
+
+        /* AdMob Banner (Bottom) */
+        #admob-banner-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: #0a0a0a; border-top: 1px solid #222; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; color: #888;
+        }
+        .admob-badge {
+            background: #f1c40f; color: #000; font-weight: bold;
+            padding: 2px 6px; border-radius: 3px; margin-right: 8px; font-size: 0.65rem;
+        }
+
+        /* AdMob Fullscreen Video Modal */
+        #admob-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 300; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- AdMob Banner View (Bottom) -->
+<div id="admob-banner-container">
+    <span class="admob-badge">AdMob Test</span>
+    <span>Google AdMob Banner Ad (320x50)</span>
+</div>
+
+<!-- Mega Bomb Button -->
+<div id="bomb-btn" class="hidden" onclick="triggerMegaBomb()">
+    💣
+    <div id="bomb-cooldown">0</div>
+</div>
+
+<!-- In-Game HUD -->
+<div id="hud" class="hidden">
+    <div class="hud-left">
+        <span id="hearts-txt">❤️❤️❤️</span>
+        <span>🪙 <span id="coin-txt" style="color:var(--gold);">0</span></span>
+        <span id="combo-txt" style="color:var(--purple); font-weight:900; margin-left:4px;"></span>
+    </div>
+    <div class="hud-right">
+        <span>LVL: <span id="lv-txt">1</span></span>
+        <span>SCORE: <span id="sc-txt">0</span></span>
+        <div class="icon-btn" onclick="toggleAudio()" id="audio-btn">🔊</div>
+        <div class="icon-btn" onclick="togglePause()">⏸</div>
+    </div>
+</div>
+
+<!-- Boss Health HUD -->
+<div id="boss-ui">
+    <div style="color:var(--red); font-size: 0.75rem; font-weight: bold; letter-spacing: 2px;">⚠️ BOSS ENCOUNTER</div>
+    <div class="hp-bg"><div id="hp-fill"></div></div>
+</div>
+
+<!-- Welcome Screen -->
+<div id="welcome-screen" class="screen">
+    <h1 class="logo-text">GALAXY<br>WARRIOR</h1>
+    <div id="loading-box" style="margin-bottom: 15px;">
+        <p id="loading-txt" style="color:var(--blue); font-weight: bold; margin-bottom: 8px;">Loading Systems: 0%</p>
+        <div style="width: 200px; height: 6px; background: #222; border-radius: 3px; overflow: hidden;">
+            <div id="load-bar" style="width: 0%; height: 100%; background: var(--blue); transition: width 0.2s;"></div>
+        </div>
+    </div>
+    <div id="main-menu-btns" class="hidden">
+        <div style="margin-bottom: 15px; color: #88a; font-size: 0.95rem;">
+            🏆 HIGH SCORE: <span id="high-score-txt" style="color:var(--gold); font-weight:bold;">0</span>
+        </div>
+        <button class="btn" onclick="openShop()">HANGAR & UPGRADES</button>
+        <button class="btn btn-gold" onclick="claimDailyBonus()" id="daily-btn">🎁 DAILY REWARD (+100 🪙)</button>
+    </div>
+</div>
+
+<!-- Shop & Upgrade Screen -->
+<div id="menu-screen" class="screen hidden">
+    <h2 style="color:var(--blue); margin-bottom: 6px;">HANGAR & UPGRADES</h2>
+    <div style="color:var(--gold); font-size: 1.05rem; margin-bottom: 10px;">COINS: <span id="shop-coin-txt">0</span> 🪙</div>
+    
+    <div class="shop-tabs">
+        <div class="shop-tab active" id="tab-ships-btn" onclick="switchShopTab('ships')">SHIPS</div>
+        <div class="shop-tab" id="tab-upgrades-btn" onclick="switchShopTab('upgrades')">UPGRADES</div>
+    </div>
+
+    <!-- Ships Section -->
+    <div id="shop-ships-view">
+        <div class="plane-grid" id="ship-list"></div>
+    </div>
+
+    <!-- Upgrades Section -->
+    <div id="shop-upgrades-view" class="hidden">
+        <div class="upgrade-row">
+            <div>
+                <div style="font-weight:bold; font-size:0.85rem;">Laser Damage</div>
+                <div style="font-size:0.75rem; color:#aaa;" id="dmg-lvl-txt">Lvl 1</div>
+            </div>
+            <button class="btn btn-gold" style="padding:6px 14px; font-size:0.8rem;" onclick="upgradeStat('damage')"><span id="dmg-cost-txt">50 🪙</span></button>
+        </div>
+        <div class="upgrade-row">
+            <div>
+                <div style="font-weight:bold; font-size:0.85rem;">Fire Rate</div>
+                <div style="font-size:0.75rem; color:#aaa;" id="fire-lvl-txt">Lvl 1</div>
+            </div>
+            <button class="btn btn-gold" style="padding:6px 14px; font-size:0.8rem;" onclick="upgradeStat('fireRate')"><span id="fire-cost-txt">60 🪙</span></button>
+        </div>
+        <div class="upgrade-row">
+            <div>
+                <div style="font-weight:bold; font-size:0.85rem;">Coin Magnet</div>
+                <div style="font-size:0.75rem; color:#aaa;" id="mag-lvl-txt">Lvl 0</div>
+            </div>
+            <button class="btn btn-gold" style="padding:6px 14px; font-size:0.8rem;" onclick="upgradeStat('magnet')"><span id="mag-cost-txt">80 🪙</span></button>
+        </div>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <button class="btn btn-green" onclick="openLevelMap()">MISSIONS</button>
+        <button class="btn" onclick="toggleS('welcome-screen')" style="background:#333;">BACK</button>
+    </div>
+</div>
+
+<!-- Mission Level Screen -->
+<div id="level-screen" class="screen hidden">
+    <h2>SELECT MISSION</h2>
+    <div class="level-grid" id="lvl-container"></div>
+    <button class="btn" onclick="toggleS('menu-screen')" style="background:#333;">BACK</button>
+</div>
+
+<!-- Pause Modal -->
+<div id="pause-screen" class="screen hidden">
+    <h2>GAME PAUSED</h2>
+    <button class="btn btn-green" onclick="togglePause()">RESUME</button>
+    <button class="btn" onclick="location.reload()" style="background:#444;">MAIN MENU</button>
+</div>
+
+<!-- Pop Screen (Game Over / Level Complete) -->
+<div id="pop-screen" class="screen hidden">
+    <h1 id="pop-t">GAME OVER</h1>
+    <div id="stars-display" style="font-size: 1.8rem; margin: 8px 0; color: var(--gold);"></div>
+    <p id="pop-desc" style="font-size: 1.1rem; margin: 10px 0; color: var(--gold);"></p>
+    <button id="ad-btn" class="btn btn-green" onclick="requestRewardedAd()">WATCH AD (+1 LIFE)</button>
+    <button class="btn btn-purple" id="next-lvl-btn" style="display:none;" onclick="startNextMission()">NEXT MISSION</button>
+    <button class="btn" onclick="toggleS('menu-screen')" style="background:#444;">MENU</button>
+</div>
+
+<!-- AdMob Test Video Popup Modal (Browser & App Fallback) -->
+<div id="admob-modal" class="hidden">
+    <div style="background:#111; border:2px solid var(--gold); padding:25px; border-radius:12px; max-width:300px; text-align:center;">
+        <span class="admob-badge" style="font-size:0.8rem;">AdMob Rewarded Video</span>
+        <h3 id="ad-title" style="margin:12px 0; color:#fff;">Watching Ad for Reward</h3>
+        <p id="ad-timer" style="color:#aaa; margin-bottom:15px; font-size:0.9rem;">Reward in: <b id="ad-count" style="color:var(--gold);">4</b>s</p>
+        <div style="width:100%; height:8px; background:#222; border-radius:4px; overflow:hidden;">
+            <div id="ad-progress" style="width:0%; height:100%; background:var(--gold); transition: width 0.1s linear;"></div>
+        </div>
+    </div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script>
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+let W, H;
+function res() { W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+res(); window.onresize = res;
+
+/* ============================================================
+   GOOGLE ADMOB CONTROLLER (Official Test Ad Integration)
+============================================================ */
+const AdMob = {
+    showBanner: function() {
+        document.getElementById('admob-banner-container').classList.remove('hidden');
+        if (window.AndroidBridge && window.AndroidBridge.postMessage) {
+            window.AndroidBridge.postMessage('showBanner');
+        }
+    },
+    hideBanner: function() {
+        document.getElementById('admob-banner-container').classList.add('hidden');
+        if (window.AndroidBridge && window.AndroidBridge.postMessage) {
+            window.AndroidBridge.postMessage('hideBanner');
+        }
+    },
+    showInterstitial: function(cb) {
+        if (window.AndroidBridge && window.AndroidBridge.postMessage) {
+            window.AndroidBridge.postMessage('showInterstitial');
+            if (cb) cb();
+        } else {
+            console.log("[AdMob] Interstitial Test Ad Triggered");
+            if (cb) cb();
+        }
+    },
+    showRewarded: function(onSuccess) {
+        if (window.AndroidBridge && window.AndroidBridge.postMessage) {
+            window.rewardSuccessCallback = onSuccess;
+            window.AndroidBridge.postMessage('showRewardedVideo');
+        } else {
+            // ব্রাউজার টেস্টের জন্য টেস্ট ভিডিও মোডাল
+            const modal = document.getElementById('admob-modal');
+            const countTxt = document.getElementById('ad-count');
+            const prog = document.getElementById('ad-progress');
+            modal.classList.remove('hidden');
+            let count = 4;
+            countTxt.innerText = "4";
+            prog.style.width = "0%";
+            const interval = setInterval(() => {
+                count--;
+                countTxt.innerText = count;
+                prog.style.width = ((4 - count) / 4) * 100 + "%";
+                if (count <= 0) {
+                    clearInterval(interval);
+                    modal.classList.add('hidden');
+                    if (onSuccess) onSuccess();
+                }
+            }, 1000);
+        }
+    }
+};
+
+window.onNativeRewardEarned = function() {
+    if (window.rewardSuccessCallback) {
+        window.rewardSuccessCallback();
+        window.rewardSuccessCallback = null;
+    }
+};
+
+/* --- Assets Pipeline --- */
+const img = {};
+const assetFiles = [
+    { key: 'plane1', src: 'plane1.png' },
+    { key: 'plane2', src: 'plane2.png' },
+    { key: 'plane3', src: 'plane3.png' },
+    { key: 'obscle', src: 'obscle.png' },
+    { key: 'boss',   src: 'boss.png' },
+    { key: 'bullet', src: 'bullet.png' },
+    { key: 'bg',     src: 'bg.png' }
+];
+
+let loadedCount = 0;
+const totalAssets = assetFiles.length + 2;
+
+function updateLoader() {
+    loadedCount++;
+    const pct = Math.floor((loadedCount / totalAssets) * 100);
+    document.getElementById('loading-txt').innerText = `Loading Systems: ${pct}%`;
+    document.getElementById('load-bar').style.width = pct + "%";
+    if (loadedCount >= totalAssets) {
+        setTimeout(() => {
+            document.getElementById('loading-box').classList.add('hidden');
+            document.getElementById('main-menu-btns').classList.remove('hidden');
+        }, 300);
+    }
+}
+
+assetFiles.forEach(a => {
+    const i = new Image();
+    i.src = a.src;
+    i.onload = updateLoader;
+    i.onerror = () => { console.warn("Asset fallback:", a.src); updateLoader(); };
+    img[a.key] = i;
+});
+
+/* --- Dual Audio System --- */
+let isAudioMuted = false;
+const bgm = new Audio("bgm.wav");
+bgm.loop = true;
+bgm.oncanplaythrough = updateLoader;
+bgm.onerror = updateLoader;
+
+const bulletSnd = new Audio("bullet.wav");
+bulletSnd.oncanplaythrough = updateLoader;
+bulletSnd.onerror = updateLoader;
+
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+function initAudioEngine() {
+    if (!actx) actx = new AudioCtx();
+    if (actx.state === 'suspended') actx.resume();
+    if (!isAudioMuted) bgm.play().catch(() => {});
+}
+
+function toggleAudio() {
+    isAudioMuted = !isAudioMuted;
+    document.getElementById('audio-btn').innerText = isAudioMuted ? '🔇' : '🔊';
+    if (isAudioMuted) {
+        bgm.pause();
+    } else {
+        bgm.play().catch(() => {});
+    }
+}
+
+function playLaserSound() {
+    if (isAudioMuted) return;
+    if (bulletSnd && bulletSnd.readyState >= 2) {
+        const s = bulletSnd.cloneNode();
+        s.volume = 0.25;
+        s.play().catch(() => {});
+    } else if (actx) {
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.connect(gain); gain.connect(actx.destination);
+        const t = actx.currentTime;
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(100, t + 0.08);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.08);
+        osc.start(t); osc.stop(t + 0.08);
+    }
+}
+
+function playSfx(type) {
+    if (isAudioMuted || !actx) return;
+    const osc = actx.createOscillator();
+    const gain = actx.createGain();
+    osc.connect(gain); gain.connect(actx.destination);
+    const t = actx.currentTime;
+
+    if (type === 'exp') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.linearRampToValueAtTime(30, t + 0.25);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.25);
+        osc.start(t); osc.stop(t + 0.25);
+    } else if (type === 'coin') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(950, t);
+        osc.frequency.setValueAtTime(1400, t + 0.08);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+        osc.start(t); osc.stop(t + 0.2);
+    } else if (type === 'powerup') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.3);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+        osc.start(t); osc.stop(t + 0.3);
+    } else if (type === 'bomb') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.linearRampToValueAtTime(20, t + 0.6);
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.linearRampToValueAtTime(0.01, t + 0.6);
+        osc.start(t); osc.stop(t + 0.6);
+    }
+}
+
+/* --- Storage & Upgrade Progression --- */
+let totalCoins = parseInt(localStorage.getItem('gw_coins')) || 0;
+let highScore = parseInt(localStorage.getItem('gw_high')) || 0;
+let unlockedShips = JSON.parse(localStorage.getItem('gw_ships')) || ['plane1'];
+let missionStars = JSON.parse(localStorage.getItem('gw_stars')) || {};
+let selShip = 'plane1';
+
+let upgrades = JSON.parse(localStorage.getItem('gw_upgrades')) || {
+    damage: 1,
+    fireRate: 1,
+    magnet: 0
+};
+
+document.getElementById('high-score-txt').innerText = highScore;
+
+const SHIPS = [
+    { id: 'plane1', name: 'Alpha Striker', price: 0, power: 1, imgKey: 'plane1' },
+    { id: 'plane2', name: 'Plasma Ghost', price: 80, power: 2, imgKey: 'plane2' },
+    { id: 'plane3', name: 'Void Titan', price: 200, power: 3, imgKey: 'plane3' }
+];
+
+function claimDailyBonus() {
+    const today = new Date().toDateString();
+    const lastClaim = localStorage.getItem('gw_daily');
+    if (lastClaim === today) {
+        alert("আজকের ডেইলি রিওয়ার্ড ইতিমধ্যে ক্লেইম করা হয়েছে! আগামীকাল আবার আসুন।");
+        return;
+    }
+    totalCoins += 100;
+    localStorage.setItem('gw_coins', totalCoins);
+    localStorage.setItem('gw_daily', today);
+    playSfx('coin');
+    alert("অভিনন্দন! আপনি ১০০ ফ্রি কয়েন পেয়েছেন! 🪙");
+    document.getElementById('daily-btn').style.opacity = '0.5';
+}
+
+function switchShopTab(tab) {
+    if (tab === 'ships') {
+        document.getElementById('shop-ships-view').classList.remove('hidden');
+        document.getElementById('shop-upgrades-view').classList.add('hidden');
+        document.getElementById('tab-ships-btn').classList.add('active');
+        document.getElementById('tab-upgrades-btn').classList.remove('active');
+    } else {
+        document.getElementById('shop-ships-view').classList.add('hidden');
+        document.getElementById('shop-upgrades-view').classList.remove('hidden');
+        document.getElementById('tab-ships-btn').classList.remove('active');
+        document.getElementById('tab-upgrades-btn').classList.add('active');
+        renderUpgradeUI();
+    }
+}
+
+function renderUpgradeUI() {
+    document.getElementById('dmg-lvl-txt').innerText = `Lvl ${upgrades.damage} (+${(upgrades.damage-1)*20}% Dmg)`;
+    document.getElementById('dmg-cost-txt').innerText = upgrades.damage >= 5 ? 'MAX' : `${upgrades.damage * 60} 🪙`;
+
+    document.getElementById('fire-lvl-txt').innerText = `Lvl ${upgrades.fireRate} (+${(upgrades.fireRate-1)*15}% Spd)`;
+    document.getElementById('fire-cost-txt').innerText = upgrades.fireRate >= 5 ? 'MAX' : `${upgrades.fireRate * 70} 🪙`;
+
+    document.getElementById('mag-lvl-txt').innerText = `Lvl ${upgrades.magnet} (${upgrades.magnet > 0 ? upgrades.magnet*50+'px' : 'Off'})`;
+    document.getElementById('mag-cost-txt').innerText = upgrades.magnet >= 5 ? 'MAX' : `${(upgrades.magnet+1) * 80} 🪙`;
+}
+
+function upgradeStat(stat) {
+    const costs = {
+        damage: upgrades.damage * 60,
+        fireRate: upgrades.fireRate * 70,
+        magnet: (upgrades.magnet + 1) * 80
+    };
+    if (upgrades[stat] >= 5) return;
+    if (totalCoins >= costs[stat]) {
+        totalCoins -= costs[stat];
+        upgrades[stat]++;
+        localStorage.setItem('gw_coins', totalCoins);
+        localStorage.setItem('gw_upgrades', JSON.stringify(upgrades));
+        document.getElementById('shop-coin-txt').innerText = totalCoins;
+        playSfx('powerup');
+        renderUpgradeUI();
+    } else {
+        alert("পর্যাপ্ত কয়েন নেই!");
+    }
+}
+
+function openShop() {
+    initAudioEngine();
+    toggleS('menu-screen');
+    document.getElementById('shop-coin-txt').innerText = totalCoins;
+    const container = document.getElementById('ship-list');
+    container.innerHTML = '';
+
+    SHIPS.forEach(ship => {
+        const isUnlocked = unlockedShips.includes(ship.id);
+        const card = document.createElement('div');
+        card.className = `plane-card ${selShip === ship.id ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
+        
+        card.innerHTML = `
+            <img src="${ship.imgKey}.png" alt="${ship.name}">
+            <div style="font-weight:bold;font-size:0.75rem;white-space:nowrap;">${ship.name}</div>
+            <div style="font-size:0.7rem;color:var(--gold);">${isUnlocked ? (selShip === ship.id ? 'EQUIPPED' : 'SELECT') : ship.price + ' 🪙'}</div>
+        `;
+        card.onclick = () => {
+            if (isUnlocked) {
+                selShip = ship.id;
+                openShop();
+            } else if (totalCoins >= ship.price) {
+                totalCoins -= ship.price;
+                unlockedShips.push(ship.id);
+                localStorage.setItem('gw_coins', totalCoins);
+                localStorage.setItem('gw_ships', JSON.stringify(unlockedShips));
+                selShip = ship.id;
+                playSfx('powerup');
+                openShop();
+            }
+        };
+        container.appendChild(card);
+    });
+}
+
+function openLevelMap() {
+    toggleS('level-screen');
+    const container = document.getElementById('lvl-container');
+    container.innerHTML = '';
+    const unlocked = parseInt(localStorage.getItem('gw_unlocked')) || 1;
+    for(let i = 1; i <= 12; i++) {
+        const stars = missionStars[i] || 0;
+        const b = document.createElement('div');
+        b.className = `lvl-btn ${i <= unlocked ? 'unlocked' : ''}`;
+        b.innerHTML = `
+            <div>${i}</div>
+            <div class="lvl-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+        `;
+        if(i <= unlocked) b.onclick = () => startMission(i);
+        container.appendChild(b);
+    }
+}
+
+/* --- Gameplay Variables --- */
+let run = false, isPaused = false, score = 0, level = 1, tick = 0, bossActive = false;
+let bgScrollY = 0, screenShake = 0;
+let combo = 0, comboTimer = 0;
+let bombCooldown = 0;
+let shockwaves = [];
+let floatingTexts = [];
+
+let player = { x: 0, y: 0, w: 55, h: 55, hp: 3, maxHp: 3, shield: 0, gunLevel: 1, gunTimer: 0, magnetTimer: 0 };
+let bullets = [], enemies = [], enemyBullets = [], items = [], particles = [];
+let boss = { x: 0, y: -160, w: 160, h: 120, hp: 0, max: 0, dir: 1, phase: 1 };
+
+function startMission(lvl) {
+    res();
+    level = lvl; score = 0; tick = 0; bossActive = false; isPaused = false;
+    combo = 0; comboTimer = 0; bombCooldown = 0;
+    bullets = []; enemies = []; enemyBullets = []; items = []; particles = []; shockwaves = []; floatingTexts = [];
+    
+    const shipObj = SHIPS.find(s => s.id === selShip);
+    player.hp = 3;
+    player.shield = 180;
+    player.gunLevel = shipObj.power;
+    player.gunTimer = 0;
+    player.magnetTimer = 0;
+    player.x = (W / 2) - 27;
+    player.y = H - 140;
+    
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('bomb-btn').classList.remove('hidden');
+    document.getElementById('boss-ui').style.display = 'none';
+    updateHUD();
+    
+    run = true;
+    requestAnimationFrame(loop);
+}
+
+function startNextMission() {
+    startMission(level + 1);
+}
+
+function togglePause() {
+    if (!run) return;
+    isPaused = !isPaused;
+    if (isPaused) {
+        document.getElementById('pause-screen').classList.remove('hidden');
+    } else {
+        document.getElementById('pause-screen').classList.add('hidden');
+        requestAnimationFrame(loop);
+    }
+}
+
+function updateHUD() {
+    document.getElementById('hearts-txt').innerText = "❤️".repeat(Math.max(0, player.hp));
+    document.getElementById('coin-txt').innerText = totalCoins;
+    document.getElementById('lv-txt').innerText = level;
+    document.getElementById('sc-txt').innerText = score;
+    document.getElementById('combo-txt').innerText = combo > 1 ? `x${combo} COMBO!` : '';
+}
+
+function triggerMegaBomb() {
+    if (bombCooldown > 0 || !run || isPaused) return;
+    bombCooldown = 600; // 10 sec cooldown
+    playSfx('bomb');
+    screenShake = 18;
+    if (navigator.vibrate) navigator.vibrate(200);
+
+    shockwaves.push({ x: player.x + player.w/2, y: player.y + player.h/2, r: 10, maxR: W * 0.8, color: '#ff3344' });
+
+    enemyBullets = [];
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        createExplosion(e.x + e.w/2, e.y + e.h/2, '#ff3344', 20);
+        dropItem(e.x + e.w/2, e.y + e.h/2);
+        score += 25 * Math.max(1, combo);
+        enemies.splice(i, 1);
+    }
+
+    if (bossActive) {
+        boss.hp -= 25 * upgrades.damage;
+        createExplosion(boss.x + boss.w/2, boss.y + boss.h/2, '#fff', 30);
+        document.getElementById('hp-fill').style.width = (boss.hp / boss.max) * 100 + "%";
+        if (boss.hp <= 0) finishBoss();
+    }
+    updateHUD();
+}
+
+function createFloatingText(text, x, y, color = '#ffd700') {
+    floatingTexts.push({ text, x, y, life: 1.0, color });
+}
+
+function createExplosion(x, y, color, count = 16) {
+    playSfx('exp');
+    screenShake = 6;
+    if (navigator.vibrate) navigator.vibrate(30);
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x, y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
+            life: 1.0, color: color || '#ffd700', size: Math.random() * 3 + 2
+        });
+    }
+}
+
+/* --- Main Game Loop --- */
+function loop() {
+    if (!run || isPaused) return;
+
+    ctx.save();
+    if (screenShake > 0) {
+        const sx = (Math.random() - 0.5) * screenShake;
+        const sy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(sx, sy);
+        screenShake *= 0.9;
+        if (screenShake < 0.5) screenShake = 0;
+    }
+    
+    // Background Scrolling
+    bgScrollY += 2;
+    if (bgScrollY >= H) bgScrollY = 0;
+
+    if (img.bg && img.bg.complete && img.bg.naturalWidth > 0) {
+        ctx.drawImage(img.bg, 0, bgScrollY, W, H);
+        ctx.drawImage(img.bg, 0, bgScrollY - H, W, H);
+    } else {
+        ctx.fillStyle = "#030712";
+        ctx.fillRect(0, 0, W, H);
+    }
+
+    tick++;
+
+    // Timers
+    if (player.shield > 0) player.shield--;
+    if (player.gunTimer > 0) {
+        player.gunTimer--;
+        if (player.gunTimer <= 0) player.gunLevel = SHIPS.find(s => s.id === selShip).power;
+    }
+    if (player.magnetTimer > 0) player.magnetTimer--;
+
+    // Combo Timer
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer <= 0) { combo = 0; updateHUD(); }
+    }
+
+    // Bomb Cooldown UI
+    if (bombCooldown > 0) {
+        bombCooldown--;
+        document.getElementById('bomb-cooldown').style.display = 'flex';
+        document.getElementById('bomb-cooldown').innerText = Math.ceil(bombCooldown / 60);
+    } else {
+        document.getElementById('bomb-cooldown').style.display = 'none';
+    }
+
+    // Shockwaves
+    for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.r += 16;
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+        ctx.stroke();
+        if (sw.r >= sw.maxR) shockwaves.splice(i, 1);
+    }
+
+    // Jet Engine Particles
+    if (tick % 2 === 0) {
+        particles.push({
+            x: player.x + player.w/2 + (Math.random() - 0.5) * 6,
+            y: player.y + player.h - 5,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: Math.random() * 4 + 3,
+            life: 0.5,
+            color: '#00d4ff',
+            size: 3
+        });
+    }
+
+    // Player Shooting Rate
+    const fireInterval = Math.max(8, 14 - (upgrades.fireRate - 1) * 1.5);
+    if (tick % Math.floor(fireInterval) === 0) {
+        playLaserSound();
+        const dmg = upgrades.damage;
+        if (player.gunLevel === 1) {
+            bullets.push({ x: player.x + player.w/2 - 5, y: player.y, vx: 0, vy: -13, dmg });
+        } else if (player.gunLevel === 2) {
+            bullets.push({ x: player.x + 8, y: player.y + 10, vx: 0, vy: -13, dmg });
+            bullets.push({ x: player.x + player.w - 18, y: player.y + 10, vx: 0, vy: -13, dmg });
+        } else {
+            bullets.push({ x: player.x + player.w/2 - 5, y: player.y, vx: 0, vy: -13, dmg });
+            bullets.push({ x: player.x + 5, y: player.y + 10, vx: -2.5, vy: -12, dmg });
+            bullets.push({ x: player.x + player.w - 15, y: player.y + 10, vx: 2.5, vy: -12, dmg });
+        }
+    }
+
+    // Boss Trigger
+    if (!bossActive && score >= 1200) {
+        bossActive = true;
+        boss.max = level * 50;
+        boss.hp = boss.max;
+        boss.y = -160;
+        boss.x = (W / 2) - 80;
+        document.getElementById('boss-ui').style.display = 'block';
+    }
+
+    // Boss Logic
+    if (bossActive) {
+        if (boss.y < 70) boss.y += 2;
+        boss.x += boss.dir * (2 + level * 0.25);
+        if (boss.x < 0 || boss.x > W - boss.w) boss.dir *= -1;
+        
+        if (img.boss && img.boss.complete && img.boss.naturalWidth > 0) {
+            ctx.drawImage(img.boss, boss.x, boss.y, boss.w, boss.h);
+        } else {
+            ctx.fillStyle = "purple";
+            ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+        }
+
+        if (tick % 45 === 0) {
+            enemyBullets.push({ x: boss.x + boss.w/2, y: boss.y + boss.h, vx: 0, vy: 6 });
+            enemyBullets.push({ x: boss.x + 20, y: boss.y + boss.h - 20, vx: -2.5, vy: 5.5 });
+            enemyBullets.push({ x: boss.x + boss.w - 20, y: boss.y + boss.h - 20, vx: 2.5, vy: 5.5 });
+        }
+    } else if (tick % Math.max(16, 45 - level * 3) === 0) {
+        const rand = Math.random();
+        let type = 'cruiser';
+        let hp = 1, spd = 3 + level * 0.2, color = '#e67e22', w = 48, h = 48;
+        if (rand < 0.3) {
+            type = 'scout'; hp = 1; spd = 5 + level * 0.25; w = 38; h = 38; color = '#00d4ff';
+        } else if (rand > 0.75) {
+            type = 'heavy'; hp = 3; spd = 2 + level * 0.15; w = 56; h = 56; color = '#e74c3c';
+        }
+        enemies.push({ x: Math.random() * (W - w), y: -h, w, h, hp, maxHp: hp, spd, type, color });
+    }
+
+    // Enemies Logic
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        e.y += e.spd;
+        if (e.type === 'scout') e.x += Math.sin(tick * 0.1) * 2;
+
+        if (img.obscle && img.obscle.complete && img.obscle.naturalWidth > 0) {
+            ctx.drawImage(img.obscle, e.x, e.y, e.w, e.h);
+        } else {
+            ctx.fillStyle = e.color;
+            ctx.fillRect(e.x, e.y, e.w, e.h);
+        }
+
+        if (e.type === 'heavy' && tick % 80 === 0) {
+            enemyBullets.push({ x: e.x + e.w/2, y: e.y + e.h, vx: -1.5, vy: 4.5 });
+            enemyBullets.push({ x: e.x + e.w/2, y: e.y + e.h, vx: 1.5, vy: 4.5 });
+        } else if (tick % 70 === 0) {
+            enemyBullets.push({ x: e.x + e.w/2, y: e.y + e.h, vx: 0, vy: 5 });
+        }
+
+        if (e.y > H) { enemies.splice(i, 1); continue; }
+
+        if (Math.hypot(e.x + e.w/2 - (player.x + player.w/2), e.y + e.h/2 - (player.y + player.h/2)) < 35) {
+            hitPlayer();
+            enemies.splice(i, 1);
+            createExplosion(e.x + e.w/2, e.y + e.h/2, '#ff6600');
+        }
+    }
+
+    // Bullets Hit Check
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        b.x += b.vx; b.y += b.vy;
+
+        if (img.bullet && img.bullet.complete && img.bullet.naturalWidth > 0) {
+            ctx.drawImage(img.bullet, b.x, b.y, 10, 24);
+        } else {
+            ctx.fillStyle = "#00d4ff";
+            ctx.fillRect(b.x, b.y, 4, 15);
+        }
+
+        // Hit Boss
+        if (bossActive && b.x > boss.x && b.x < boss.x + boss.w && b.y > boss.y && b.y < boss.y + boss.h) {
+            boss.hp -= b.dmg;
+            bullets.splice(i, 1);
+            createExplosion(b.x, b.y, '#fff', 3);
+            createFloatingText(`-${b.dmg}`, b.x, b.y, '#ff4d4d');
+            document.getElementById('hp-fill').style.width = (boss.hp / boss.max) * 100 + "%";
+            if (boss.hp <= 0) finishBoss();
+            continue;
+        }
+
+        // Hit Enemies
+        for (let ei = enemies.length - 1; ei >= 0; ei--) {
+            const e = enemies[ei];
+            if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
+                e.hp -= b.dmg;
+                bullets.splice(i, 1);
+                createFloatingText(`-${b.dmg}`, b.x, b.y, '#fff');
+
+                if (e.hp <= 0) {
+                    combo++;
+                    comboTimer = 120;
+                    const pts = 15 * combo;
+                    score += pts;
+                    createExplosion(e.x + e.w/2, e.y + e.h/2, '#00d4ff');
+                    createFloatingText(`+${pts}`, e.x + e.w/2, e.y, '#ffd700');
+                    dropItem(e.x + e.w/2, e.y + e.h/2);
+                    enemies.splice(ei, 1);
+                }
+                updateHUD();
+                break;
+            }
+        }
+        if (b.y < -30) bullets.splice(i, 1);
+    }
+
+    // Enemy Bullets
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const b = enemyBullets[i];
+        b.x += b.vx; b.y += b.vy;
+        ctx.fillStyle = "#ff3344";
+        ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill();
+
+        if (Math.hypot(b.x - (player.x + player.w/2), b.y - (player.y + player.h/2)) < 24) {
+            enemyBullets.splice(i, 1);
+            hitPlayer();
+        }
+        if (b.y > H) enemyBullets.splice(i, 1);
+    }
+
+    // Power-up Drops
+    const magnetRadius = (player.magnetTimer > 0 ? 300 : upgrades.magnet * 45);
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        
+        if (magnetRadius > 0) {
+            const dx = (player.x + player.w/2) - item.x;
+            const dy = (player.y + player.h/2) - item.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < magnetRadius) {
+                item.x += (dx / dist) * 7;
+                item.y += (dy / dist) * 7;
+            } else {
+                item.y += 2.2;
+            }
+        } else {
+            item.y += 2.2;
+        }
+        
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, 11, 0, Math.PI * 2);
+        ctx.fillStyle = item.color;
+        ctx.fill();
+
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(item.label, item.x, item.y);
+
+        if (Math.hypot(item.x - (player.x + player.w/2), item.y - (player.y + player.h/2)) < 30) {
+            if (item.type === 'coin') {
+                totalCoins++;
+                localStorage.setItem('gw_coins', totalCoins);
+                playSfx('coin');
+                createFloatingText('+1 🪙', item.x, item.y, '#ffd700');
+            } else if (item.type === 'shield') {
+                player.shield = 350;
+                playSfx('powerup');
+                createFloatingText('SHIELD!', item.x, item.y, '#00d4ff');
+            } else if (item.type === 'gun') {
+                player.gunLevel = 3;
+                player.gunTimer = 400;
+                playSfx('powerup');
+                createFloatingText('MULTI-GUN!', item.x, item.y, '#ff3344');
+            } else if (item.type === 'heal') {
+                if (player.hp < player.maxHp) player.hp++;
+                playSfx('powerup');
+                createFloatingText('+1 HP ❤️', item.x, item.y, '#2ecc71');
+            } else if (item.type === 'magnet') {
+                player.magnetTimer = 450;
+                playSfx('powerup');
+                createFloatingText('MAGNET! 🧲', item.x, item.y, '#a855f7');
+            }
+            updateHUD();
+            items.splice(i, 1);
+        }
+        if (item.y > H) items.splice(i, 1);
+    }
+
+    // Floating Text Render
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y -= 1.2;
+        ft.life -= 0.03;
+        ctx.globalAlpha = Math.max(0, ft.life);
+        ctx.fillStyle = ft.color;
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.globalAlpha = 1.0;
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+
+    // Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= 0.025;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size || 3, p.size || 3);
+        ctx.globalAlpha = 1.0;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // Draw Player Ship
+    const pImg = img[selShip];
+    if (pImg && pImg.complete && pImg.naturalWidth > 0) {
+        ctx.drawImage(pImg, player.x, player.y, player.w, player.h);
+    } else {
+        ctx.fillStyle = "cyan";
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+    }
+
+    // Magnet Active Aura
+    if (player.magnetTimer > 0) {
+        ctx.strokeStyle = "rgba(168, 85, 247, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(player.x + player.w/2, player.y + player.h/2, 45, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    // Shield Aura
+    if (player.shield > 0) {
+        ctx.strokeStyle = `rgba(0, 212, 255, ${0.4 + Math.sin(tick * 0.2) * 0.4})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x + player.w/2, player.y + player.h/2, 36, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+    requestAnimationFrame(loop);
+}
+
+function dropItem(x, y) {
+    const r = Math.random();
+    if (r < 0.28) {
+        items.push({ x, y, type: 'coin', color: '#ffd700', label: '🪙' });
+    } else if (r < 0.35) {
+        items.push({ x, y, type: 'shield', color: '#00d4ff', label: '🛡️' });
+    } else if (r < 0.41) {
+        items.push({ x, y, type: 'gun', color: '#ff3344', label: '⚡' });
+    } else if (r < 0.45) {
+        items.push({ x, y, type: 'heal', color: '#2ecc71', label: '❤️' });
+    } else if (r < 0.49) {
+        items.push({ x, y, type: 'magnet', color: '#a855f7', label: '🧲' });
+    }
+}
+
+function finishBoss() {
+    createExplosion(boss.x + boss.w/2, boss.y + boss.h/2, '#ff3344', 40);
+    bossActive = false;
+    document.getElementById('boss-ui').style.display = 'none';
+    gameOver("MISSION COMPLETE", true);
+}
+
+function hitPlayer() {
+    if (player.shield > 0) return;
+    player.hp--;
+    player.shield = 60;
+    screenShake = 12;
+    combo = 0;
+    if (navigator.vibrate) navigator.vibrate(100);
+    updateHUD();
+    if (player.hp <= 0) gameOver("MISSION FAILED", false);
+}
+
+function gameOver(msg, isWin) {
+    run = false;
+    document.getElementById('bomb-btn').classList.add('hidden');
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('gw_high', highScore);
+    }
+    
+    let stars = 0;
+    if (isWin) {
+        stars = player.hp === 3 ? 3 : (player.hp === 2 ? 2 : 1);
+        missionStars[level] = Math.max(missionStars[level] || 0, stars);
+        localStorage.setItem('gw_stars', JSON.stringify(missionStars));
+
+        const curUnlocked = parseInt(localStorage.getItem('gw_unlocked')) || 1;
+        localStorage.setItem('gw_unlocked', Math.max(level + 1, curUnlocked));
+    }
+
+    document.getElementById('pop-screen').classList.remove('hidden');
+    document.getElementById('pop-t').innerText = msg;
+    document.getElementById('stars-display').innerText = isWin ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
+    document.getElementById('pop-desc').innerText = `SCORE: ${score} | COINS: ${totalCoins}`;
+    document.getElementById('ad-btn').style.display = isWin ? 'none' : 'block';
+    document.getElementById('next-lvl-btn').style.display = (isWin && level < 12) ? 'block' : 'none';
+
+    // AdMob Interstitial Ad Trigger
+    AdMob.showInterstitial();
+}
+
+function requestRewardedAd() {
+    AdMob.showRewarded(() => {
+        player.hp = 1;
+        player.shield = 150;
+        updateHUD();
+        document.getElementById('pop-screen').classList.add('hidden');
+        document.getElementById('bomb-btn').classList.remove('hidden');
+        run = true;
+        requestAnimationFrame(loop);
+    });
+}
+
+function toggleS(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+
+// Touch Handling
+const move = (e) => {
+    if (!run || isPaused) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    player.x = Math.max(0, Math.min(W - player.w, cx - player.w / 2));
+    player.y = Math.max(0, Math.min(H - player.h, cy - player.h / 2 - 30));
+};
+
+c.addEventListener("touchstart", e => { e.preventDefault(); move(e); }, { passive: false });
+c.addEventListener("touchmove", e => { e.preventDefault(); move(e); }, { passive: false });
+c.addEventListener("mousemove", move);
+</script>
+</body>
+</html>
