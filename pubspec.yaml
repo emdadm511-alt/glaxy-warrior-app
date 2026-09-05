@@ -15,4 +15,13 @@ dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - ./
+    - index.html
+    - plane1.png
+    - plane2.png
+    - plane3.png
+    - obscle.png
+    - boss.png
+    - bullet.png
+    - bg.png
+    - bullet.wav
+    - bgm.wav
