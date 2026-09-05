@@ -141,8 +141,8 @@
 
 <!-- AdMob Banner Container -->
 <div id="admob-banner-container">
-    <span class="admob-badge">AdMob Test Banner</span>
-    <span id="banner-id-label">ca-app-pub-3940256099942544/6300978111</span>
+    <span class="admob-badge">AdMob</span>
+    <span>Google AdMob Banner Ad</span>
 </div>
 
 <!-- Mega Bomb Button -->
@@ -260,26 +260,15 @@
     <button class="btn" onclick="toggleS('menu-screen')" style="background:#444;">MENU</button>
 </div>
 
-<!-- AdMob Test Video Popup Modal (Fallback for Browser Testing) -->
+<!-- AdMob Test Video Popup Modal -->
 <div id="admob-modal" class="hidden">
     <div style="background:#111; border:2px solid var(--gold); padding:25px; border-radius:12px; max-width:300px; text-align:center;">
-        <span class="admob-badge" style="font-size:0.8rem;">AdMob Test Video</span>
+        <span class="admob-badge" style="font-size:0.8rem;">AdMob Video</span>
         <h3 id="ad-title" style="margin:12px 0; color:#fff;">Rewarded Video Ad</h3>
-        <p style="font-size:0.7rem; color:var(--blue); margin-bottom:8px;">ID: ca-app-pub-3940256099942544/5224354917</p>
         <p id="ad-timer" style="color:#aaa; margin-bottom:15px; font-size:0.9rem;">Reward in: <b id="ad-count" style="color:var(--gold);">4</b>s</p>
         <div style="width:100%; height:8px; background:#222; border-radius:4px; overflow:hidden;">
             <div id="ad-progress" style="width:0%; height:100%; background:var(--gold); transition: width 0.1s linear;"></div>
         </div>
-    </div>
-</div>
-
-<!-- Interstitial Test Modal (Fallback for Browser Testing) -->
-<div id="admob-interstitial-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:350; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:#111; border:2px solid var(--blue); padding:25px; border-radius:12px; max-width:300px; text-align:center;">
-        <span class="admob-badge" style="font-size:0.8rem; background:var(--blue); color:#fff;">AdMob Test Interstitial</span>
-        <h3 style="margin:12px 0; color:#fff;">Interstitial Ad</h3>
-        <p style="font-size:0.7rem; color:var(--gold); margin-bottom:12px;">ID: ca-app-pub-3940256099942544/1033173712</p>
-        <button class="btn btn-green" onclick="closeInterstitialTest()">CLOSE AD</button>
     </div>
 </div>
 
@@ -293,46 +282,30 @@ function res() { W = c.width = window.innerWidth; H = c.height = window.innerHei
 res(); window.onresize = res;
 
 /* ============================================================
-   GOOGLE ADMOB TEST CONTROLLER (Official AdMob Test IDs Included)
+   GOOGLE ADMOB CONTROLLER
 ============================================================ */
-const ADMOB_TEST_IDS = {
-    banner: 'ca-app-pub-3940256099942544/6300978111',
-    interstitial: 'ca-app-pub-3940256099942544/1033173712',
-    rewarded: 'ca-app-pub-3940256099942544/5224354917'
-};
-
-let onInterstitialCloseCallback = null;
-
 const AdMob = {
     showBanner: function() {
         document.getElementById('admob-banner-container').classList.remove('hidden');
-        if (window.AndroidBridge && window.AndroidBridge.showBanner) {
-            window.AndroidBridge.showBanner(ADMOB_TEST_IDS.banner);
-        }
+        if (window.AndroidBridge && window.AndroidBridge.showBanner) window.AndroidBridge.showBanner();
     },
     hideBanner: function() {
         document.getElementById('admob-banner-container').classList.add('hidden');
-        if (window.AndroidBridge && window.AndroidBridge.hideBanner) {
-            window.AndroidBridge.hideBanner();
-        }
+        if (window.AndroidBridge && window.AndroidBridge.hideBanner) window.AndroidBridge.hideBanner();
     },
     showInterstitial: function(cb) {
-        onInterstitialCloseCallback = cb;
         if (window.AndroidBridge && window.AndroidBridge.showInterstitial) {
-            window.AndroidBridge.showInterstitial(ADMOB_TEST_IDS.interstitial);
+            window.AndroidBridge.showInterstitial();
             if (cb) cb();
         } else {
-            // Browser Test Simulator Modal
-            const modal = document.getElementById('admob-interstitial-modal');
-            modal.classList.remove('hidden');
+            if (cb) cb();
         }
     },
     showRewarded: function(onSuccess) {
         if (window.AndroidBridge && window.AndroidBridge.showRewardedVideo) {
             window.rewardSuccessCallback = onSuccess;
-            window.AndroidBridge.showRewardedVideo(ADMOB_TEST_IDS.rewarded);
+            window.AndroidBridge.showRewardedVideo();
         } else {
-            // Browser Test Simulator Modal
             const modal = document.getElementById('admob-modal');
             const countTxt = document.getElementById('ad-count');
             const prog = document.getElementById('ad-progress');
@@ -353,14 +326,6 @@ const AdMob = {
         }
     }
 };
-
-function closeInterstitialTest() {
-    document.getElementById('admob-interstitial-modal').classList.add('hidden');
-    if (onInterstitialCloseCallback) {
-        onInterstitialCloseCallback();
-        onInterstitialCloseCallback = null;
-    }
-}
 
 window.onNativeRewardEarned = function() {
     if (window.rewardSuccessCallback) {
@@ -660,17 +625,12 @@ function startMission(lvl) {
     document.getElementById('boss-ui').style.display = 'none';
     updateHUD();
     
-    AdMob.showBanner();
-
     run = true;
     requestAnimationFrame(loop);
 }
 
 function startNextMission() {
-    // পরবর্তী লেভেলে যাওয়ার আগে Interstitial Test Ad শো করবে
-    AdMob.showInterstitial(() => {
-        startMission(level + 1);
-    });
+    startMission(level + 1);
 }
 
 function togglePause() {
@@ -1139,12 +1099,10 @@ function gameOver(msg, isWin) {
     document.getElementById('ad-btn').style.display = isWin ? 'none' : 'block';
     document.getElementById('next-lvl-btn').style.display = (isWin && level < 12) ? 'block' : 'none';
 
-    // Game Over এ Interstitial Test Ad দেখানো
     AdMob.showInterstitial();
 }
 
 function requestRewardedAd() {
-    // Rewarded Video Test Ad কল করা
     AdMob.showRewarded(() => {
         player.hp = 1;
         player.shield = 150;
