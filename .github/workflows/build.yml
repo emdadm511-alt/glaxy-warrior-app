@@ -26,7 +26,8 @@ jobs:
 
       - name: Configure Android, MultiDex & AdMob
         run: |
-          flutter create --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
+          # --no-pub ব্যবহার করায় অ্যান্ড্রয়েড ফাইল তৈরির সময় কোনো প্যাকেজ এরর হবে না
+          flutter create --no-pub --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
           
           python3 -c "
           import os
@@ -42,7 +43,7 @@ jobs:
                   with open(manifest_path, 'w') as f:
                       f.write(txt)
 
-          # 2. build.gradle-এ minSdkVersion 21 ও multiDexEnabled যুক্ত করা
+          # 2. build.gradle-এ minSdk 21 ও multiDex যোগ করা
           gradle_path = 'android/app/build.gradle'
           if os.path.exists(gradle_path):
               with open(gradle_path, 'r') as f:
@@ -58,11 +59,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build Release APK
-        run: flutter build apk --release --no-tree-shake-icons
+      - name: Build APK
+        run: flutter build apk --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Galaxy-Warrior-AdMob-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
