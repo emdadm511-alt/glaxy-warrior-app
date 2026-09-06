@@ -26,34 +26,42 @@ jobs:
 
       - name: Configure Android, MultiDex & AdMob
         run: |
-          # --no-pub ব্যবহার করায় অ্যান্ড্রয়েড ফাইল তৈরির সময় কোনো প্যাকেজ এরর হবে না
           flutter create --no-pub --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
           
           python3 -c "
           import os
 
           # 1. AndroidManifest.xml-এ AdMob App ID যোগ করা
-          manifest_path = 'android/app/src/main/AndroidManifest.xml'
-          if os.path.exists(manifest_path):
-              with open(manifest_path, 'r') as f:
-                  txt = f.read()
-              if 'com.google.android.gms.ads.APPLICATION_ID' not in txt:
-                  ad_meta = '    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>\n</application>'
-                  txt = txt.replace('</application>', ad_meta)
-                  with open(manifest_path, 'w') as f:
-                      f.write(txt)
+          m_path = 'android/app/src/main/AndroidManifest.xml'
+          if os.path.exists(m_path):
+              with open(m_path, 'r') as f:
+                  m_txt = f.read()
+              if 'com.google.android.gms.ads.APPLICATION_ID' not in m_txt:
+                  m_txt = m_txt.replace('</application>', '    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>\n</application>')
+                  with open(m_path, 'w') as f:
+                      f.write(m_txt)
 
-          # 2. build.gradle-এ minSdk 21 ও multiDex যোগ করা
-          gradle_path = 'android/app/build.gradle'
-          if os.path.exists(gradle_path):
-              with open(gradle_path, 'r') as f:
-                  gtxt = f.read()
-              gtxt = gtxt.replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 21')
-              gtxt = gtxt.replace('minSdk = flutter.minSdkVersion', 'minSdk = 21')
-              if 'multiDexEnabled' not in gtxt:
-                  gtxt = gtxt.replace('defaultConfig {', 'defaultConfig {\n        multiDexEnabled true')
-              with open(gradle_path, 'w') as f:
-                  f.write(gtxt)
+          # 2. build.gradle এবং build.gradle.kts উভয় ফরম্যাটেই minSdk 21 ও multiDex ফিক্স করা
+          for g_file in ['android/app/build.gradle', 'android/app/build.gradle.kts']:
+              if os.path.exists(g_file):
+                  with open(g_file, 'r') as f:
+                      g_txt = f.read()
+                  g_txt = g_txt.replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 21')
+                  g_txt = g_txt.replace('minSdk = flutter.minSdkVersion', 'minSdk = 21')
+                  g_txt = g_txt.replace('minSdkVersion = flutter.minSdkVersion', 'minSdk = 21')
+                  if 'multiDex' not in g_txt:
+                      if 'build.gradle.kts' in g_file:
+                          g_txt = g_txt.replace('defaultConfig {', 'defaultConfig {\n        multiDexEnabled = true')
+                      else:
+                          g_txt = g_txt.replace('defaultConfig {', 'defaultConfig {\n        multiDexEnabled true')
+                  with open(g_file, 'w') as f:
+                      f.write(g_txt)
+
+          # 3. Gradle Memory ও AndroidX সক্ষম করা
+          prop_path = 'android/gradle.properties'
+          if os.path.exists(prop_path):
+              with open(prop_path, 'a') as f:
+                  f.write('\norg.gradle.jvmargs=-Xmx4096M\nandroid.useAndroidX=true\nandroid.enableJetifier=true\n')
           "
 
       - name: Install dependencies
@@ -66,4 +74,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Galaxy-Warrior-AdMob-APK
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk                  
