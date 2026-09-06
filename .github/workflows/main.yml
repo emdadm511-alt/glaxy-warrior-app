@@ -1,0 +1,84 @@
+name: Build Game APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Prepare Android Project & AdMob
+        run: |
+          flutter create --no-pub --project-name galaxy_warrior --platforms=android --org com.galaxy.warrior .
+
+          python3 -c "
+          import os
+          manifest = 'android/app/src/main/AndroidManifest.xml'
+          if os.path.exists(manifest):
+              with open(manifest, 'r') as f:
+                  txt = f.read()
+              if 'com.google.android.gms.ads.APPLICATION_ID' not in txt:
+                  meta = '<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>\n</application>'
+                  txt = txt.replace('</application>', meta)
+                  with open(manifest, 'w') as f:
+                      f.write(txt)
+          "
+
+          python3 -c "
+          import os
+          all_assets = ['index.html', 'plane1.png', 'plane2.png', 'plane3.png', 'obscle.png', 'boss.png', 'bullet.png', 'bg.png', 'bullet.wav', 'bgm.wav']
+          existing = [a for a in all_assets if os.path.exists(a)]
+
+          pubspec_content = '''name: galaxy_warrior
+description: \"Galaxy Warrior Game with AdMob\"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mobile_ads: ^5.2.0
+  webview_flutter: ^4.10.0
+
+flutter:
+  uses-material-design: true
+  assets:
+'''
+          for item in existing:
+              pubspec_content += f'    - {item}\n'
+
+          with open('pubspec.yaml', 'w') as f:
+              f.write(pubspec_content)
+          "
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Galaxy-Warrior-AdMob-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
